@@ -45,9 +45,10 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[1, 1].Value = "ID";
             worksheet.Cells[1, 2].Value = "Name";
             worksheet.Cells[1, 3].Value = "Category";
-            worksheet.Cells[1, 4].Value = "Price";
-            worksheet.Cells[1, 5].Value = "Stock";
-            worksheet.Cells[1, 6].Value = "MinStock";
+            worksheet.Cells[1, 4].Value = "UnitPrice";
+            worksheet.Cells[1, 5].Value = "Price";
+            worksheet.Cells[1, 6].Value = "Stock";
+            worksheet.Cells[1, 7].Value = "MinStock";
 
             package.SaveAs(new FileInfo(_productsFile));
         }
@@ -104,9 +105,10 @@ namespace InventoryAndSalesSystem.Services
                     Id = int.Parse(worksheet.Cells[row, 1].Value.ToString()!),
                     Name = worksheet.Cells[row, 2].Value?.ToString() ?? "",
                     Category = worksheet.Cells[row, 3].Value?.ToString() ?? "",
-                    Price = decimal.Parse(worksheet.Cells[row, 4].Value?.ToString() ?? "0"),
-                    Stock = int.Parse(worksheet.Cells[row, 5].Value?.ToString() ?? "0"),
-                    MinStock = int.Parse(worksheet.Cells[row, 6].Value?.ToString() ?? "0")
+                    UnitCost = decimal.Parse(worksheet.Cells[row, 4].Value?.ToString() ?? "0"), 
+                    Price = decimal.Parse(worksheet.Cells[row, 5].Value?.ToString() ?? "0"),
+                    Stock = int.Parse(worksheet.Cells[row, 6].Value?.ToString() ?? "0"),
+                    MinStock = int.Parse(worksheet.Cells[row, 7].Value?.ToString() ?? "0")
                 });
             }
 
@@ -140,9 +142,10 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[existingRow, 1].Value = product.Id;
             worksheet.Cells[existingRow, 2].Value = product.Name;
             worksheet.Cells[existingRow, 3].Value = product.Category;
-            worksheet.Cells[existingRow, 4].Value = product.Price;
-            worksheet.Cells[existingRow, 5].Value = product.Stock;
-            worksheet.Cells[existingRow, 6].Value = product.MinStock;
+            worksheet.Cells[existingRow, 4].Value = product.UnitCost;
+            worksheet.Cells[existingRow, 5].Value = product.Price;
+            worksheet.Cells[existingRow, 6].Value = product.Stock;
+            worksheet.Cells[existingRow, 7].Value = product.MinStock;
 
             package.Save();
         }

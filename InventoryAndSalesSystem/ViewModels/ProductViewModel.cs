@@ -22,6 +22,7 @@ namespace InventoryAndSalesSystem.ViewModels
         private string _name = string.Empty;
         private string _category = string.Empty;
         private decimal _price;
+        private decimal _unitCost;
         private int _stock;
         private int _minStock = 10;
         private int _sellQuantity = 1;
@@ -60,6 +61,7 @@ namespace InventoryAndSalesSystem.ViewModels
                     Name = value.Name;
                     Category = value.Category;
                     Price = value.Price;
+                    UnitCost = value.UnitCost;
                     Stock = value.Stock;
                     MinStock = value.MinStock;
                 }
@@ -82,6 +84,12 @@ namespace InventoryAndSalesSystem.ViewModels
         {
             get => _price;
             set { _price = value; OnPropertyChanged(); }
+        }
+
+        public decimal UnitCost
+        {
+            get => _unitCost;
+            set { _unitCost = value; OnPropertyChanged(); }
         }
 
         public int Stock
@@ -140,6 +148,7 @@ namespace InventoryAndSalesSystem.ViewModels
                 Name = Name,
                 Category = Category,
                 Price = Price,
+                UnitCost = UnitCost,
                 Stock = Stock,
                 MinStock = MinStock
             };
@@ -233,6 +242,7 @@ namespace InventoryAndSalesSystem.ViewModels
             Name = string.Empty;
             Category = string.Empty;
             Price = 0;
+            UnitCost = 0; 
             Stock = 0;
             MinStock = 10;
             SelectedProduct = null;

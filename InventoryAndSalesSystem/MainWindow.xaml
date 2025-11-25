@@ -20,7 +20,7 @@
                           FontSize="12" Foreground="#E3F2FD" Margin="0,5,0,0"/>
             </StackPanel>
         </Border>
-
+            
         <!-- Navigation and Content -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

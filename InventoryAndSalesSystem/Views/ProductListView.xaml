@@ -30,6 +30,7 @@
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Unit Cost" Binding="{Binding UnitCost, StringFormat=C, ConverterCulture='en-PH'}" Width="100" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C, ConverterCulture='en-PH'}" Width="100" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Min Stock" Binding="{Binding MinStock}" Width="80" IsReadOnly="True"/>

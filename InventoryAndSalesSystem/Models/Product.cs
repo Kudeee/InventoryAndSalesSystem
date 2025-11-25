@@ -16,6 +16,7 @@ namespace InventoryAndSalesSystem.Models
         private decimal _price;
         private int _stock;
         private int _minStock;
+        private decimal _unitCost;
 
         public int Id
         {
@@ -41,6 +42,12 @@ namespace InventoryAndSalesSystem.Models
             set { _price = value; OnPropertyChanged(); }
         }
 
+        public decimal UnitCost
+        {
+            get => _unitCost;
+            set { _unitCost = value; OnPropertyChanged(); }
+        }
+        
         public int Stock
         {
             get => _stock;
