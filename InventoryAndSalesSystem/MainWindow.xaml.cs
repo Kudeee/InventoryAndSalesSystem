@@ -189,7 +189,7 @@ namespace InventoryAndSalesSystem
 
         private void ViewReport_Click(object sender, RoutedEventArgs e)
         {
-            var reportWindow = new SalesReportWindow();
+            var reportWindow = new SalesReportWindow(Products.ToList());
             reportWindow.ShowDialog();
         }
     }
