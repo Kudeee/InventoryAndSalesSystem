@@ -61,8 +61,8 @@
                             <Run Text=" = "/>
                             <Run FontSize="20" FontWeight="Bold" Foreground="#4CAF50">
                                 <Run.Text>
-                                    <MultiBinding StringFormat="{}{0:C}" ConverterCulture="en-PH">
-                                        <Binding Path="SelectedProduct.Price"/>
+                                    <MultiBinding Converter="{StaticResource MultiplyConverter}" StringFormat="{}{0:C}" ConverterCulture="en-PH">
+                                        <Binding Path="Price"/>
                                         <Binding Path="SellQuantity"/>
                                     </MultiBinding>
                                 </Run.Text>

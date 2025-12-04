@@ -9,6 +9,7 @@
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <helpers:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
+        <helpers:MultiplyConverter x:Key="MultiplyConverter"/>
 
         <Style TargetType="Button">
             <Setter Property="Padding" Value="15,8"/>
