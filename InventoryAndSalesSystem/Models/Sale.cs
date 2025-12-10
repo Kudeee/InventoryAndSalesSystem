@@ -15,5 +15,6 @@ namespace InventoryAndSalesSystem.Models
         public decimal Price { get; set; }
         public decimal Total => Quantity * Price;
         public DateTime Date { get; set; }
+        public string TransactionType { get; set; } = "Sale"; // "Sale" or "Return"
     }
 }

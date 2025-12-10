@@ -27,6 +27,10 @@ namespace InventoryAndSalesSystem.ViewModels
         private int _minStock = 10;
         private int _sellQuantity = 1;
         private int _restockQuantity = 1;
+        private int _returnQuantity = 1;
+        private int _lossQuantity = 1;
+        private string _returnReason = string.Empty;
+        private string _lossReason = string.Empty;
 
         public ProductViewModel(ExcelDataService dataService)
         {
@@ -114,6 +118,30 @@ namespace InventoryAndSalesSystem.ViewModels
         {
             get => _restockQuantity;
             set { _restockQuantity = value; OnPropertyChanged(); }
+        }
+
+        public int ReturnQuantity
+        {
+            get => _returnQuantity;
+            set {_returnQuantity = value; OnPropertyChanged(); }
+        }
+
+        public int LossQuantity
+        {
+            get => _lossQuantity;
+            set {_lossQuantity = value; OnPropertyChanged(); }
+        }
+
+        public string ReturnReason
+        {
+            get => _returnReason;
+            set { _returnReason = value; OnPropertyChanged(); }
+        }
+
+        public string LossReason
+        {
+            get => _lossReason;
+            set { _lossReason = value; OnPropertyChanged(); }
         }
 
         public ICommand SaveCommand { get; }
@@ -262,6 +290,124 @@ namespace InventoryAndSalesSystem.ViewModels
             }
         }
 
+        private void ProcessSalesReturn()
+        {
+            if (SelectedProduct == null) return;
+
+            if (string.IsNullOrWhiteSpace(ReturnReason))
+            {
+                MessageBox.Show("Please enter a reason for the return.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var stockLog = new StockLog
+            {
+                ProductId = SelectedProduct.Id,
+                ProductName = SelectedProduct.Name,
+                Action = "Sales Return",
+                Quantity = ReturnQuantity,
+                StockBefore = SelectedProduct.Stock,
+                StockAfter = SelectedProduct.Stock + ReturnQuantity,
+                Reason = ReturnReason,
+                Date = DateTime.Now
+            };
+
+            SelectedProduct.Stock += ReturnQuantity;
+            _dataService.SaveProduct(SelectedProduct);
+            _dataService.SaveStockLog(stockLog);
+            
+            LoadProducts();
+            ReturnReason = string.Empty;
+            ReturnQuantity = 1;
+            MessageBox.Show($"Sales return processed: {ReturnQuantity} units returned to stock!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ProcessPurchaseReturn()
+        {
+            if (SelectedProduct == null) return;
+
+            if (string.IsNullOrWhiteSpace(ReturnReason))
+            {
+                MessageBox.Show("Please enter a reason for the return.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (ReturnQuantity > SelectedProduct.Stock)
+            {
+                MessageBox.Show("Return quantity cannot exceed current stock!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var stockLog = new StockLog
+            {
+                ProductId = SelectedProduct.Id,
+                ProductName = SelectedProduct.Name,
+                Action = "Purchase Return",
+                Quantity = ReturnQuantity,
+                StockBefore = SelectedProduct.Stock,
+                StockAfter = SelectedProduct.Stock - ReturnQuantity,
+                Reason = ReturnReason,
+                Date = DateTime.Now
+            };
+
+            SelectedProduct.Stock -= ReturnQuantity;
+            _dataService.SaveProduct(SelectedProduct);
+            _dataService.SaveStockLog(stockLog);
+            
+            LoadProducts();
+            ReturnReason = string.Empty;
+            ReturnQuantity = 1;
+            MessageBox.Show($"Purchase return processed: {ReturnQuantity} units returned to supplier!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ProcessProductLoss()
+        {
+            if (SelectedProduct == null) return;
+
+            if (string.IsNullOrWhiteSpace(LossReason))
+            {
+                MessageBox.Show("Please enter a reason for the loss (e.g., 'Expired', 'Damaged', 'Broken').", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (LossQuantity > SelectedProduct.Stock)
+            {
+                MessageBox.Show("Loss quantity cannot exceed current stock!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Confirm product loss:\n\nProduct: {SelectedProduct.Name}\nQuantity: {LossQuantity}\nReason: {LossReason}\n\nThis action cannot be undone.",
+                "Confirm Loss",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
+
+            if (result != MessageBoxResult.Yes) return;
+
+            var stockLog = new StockLog
+            {
+                ProductId = SelectedProduct.Id,
+                ProductName = SelectedProduct.Name,
+                Action = "Loss",
+                Quantity = LossQuantity,
+                StockBefore = SelectedProduct.Stock,
+                StockAfter = SelectedProduct.Stock - LossQuantity,
+                Reason = LossReason,
+                Date = DateTime.Now
+            };
+
+            SelectedProduct.Stock -= LossQuantity;
+            _dataService.SaveProduct(SelectedProduct);
+            _dataService.SaveStockLog(stockLog);
+            
+            LoadProducts();
+            LossReason = string.Empty;
+            LossQuantity = 1;
+            MessageBox.Show($"Product loss recorded: {LossQuantity} units removed from inventory!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

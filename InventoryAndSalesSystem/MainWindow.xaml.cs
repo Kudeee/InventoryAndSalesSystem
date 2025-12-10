@@ -65,5 +65,26 @@ namespace InventoryAndSalesSystem
             view.DataContext = new ReportViewModel(_dataService);
             ContentArea.Content = view;
         }
+
+        private void ShowSalesReturn_Click(object? sender, RoutedEventArgs e)
+        {
+            var view = new SalesReturnView();
+            view.DataContext = new ProductViewModel(_dataService);
+            ContentArea.Content = view;
+        }
+
+        private void ShowPurchaseReturn_Click(object? sender, RoutedEventArgs e)
+        {
+            var view = new PurchaseReturnView();
+            view.DataContext = new ProductViewModel(_dataService);
+            ContentArea.Content = view;
+        }
+
+        private void ShowProductLoss_Click(object? sender, RoutedEventArgs e)
+        {
+            var view = new ProductLossView();
+            view.DataContext = new ProductViewModel(_dataService);
+            ContentArea.Content = view;
+        }
     }
 }

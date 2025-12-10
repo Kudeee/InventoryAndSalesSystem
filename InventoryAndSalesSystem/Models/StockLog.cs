@@ -15,6 +15,7 @@ namespace InventoryAndSalesSystem.Models
         public int Quantity { get; set; }
         public int StockBefore { get; set; }
         public int StockAfter { get; set; }
+        public string Reason { get; set; } = string.Empty; // For returns and losses
         public DateTime Date { get; set; }
     }
 }

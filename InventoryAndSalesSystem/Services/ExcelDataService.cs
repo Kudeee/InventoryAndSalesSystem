@@ -83,7 +83,8 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[1, 5].Value = "Quantity";
             worksheet.Cells[1, 6].Value = "StockBefore";
             worksheet.Cells[1, 7].Value = "StockAfter";
-            worksheet.Cells[1, 8].Value = "Date";
+            worksheet.Cells[1, 8].Value = "Reason";
+            worksheet.Cells[1, 9].Value = "Date";
 
             package.SaveAs(new FileInfo(_stockLogsFile));
         }
@@ -215,7 +216,7 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[newRow, 4].Value = sale.Quantity;
             worksheet.Cells[newRow, 5].Value = sale.Price;
             worksheet.Cells[newRow, 6].Value = sale.Total;
-            worksheet.Cells[newRow, 7].Value = sale.Date.ToString("yyyy-MM-dd HH:mm:ss");
+            worksheet.Cells[newRow, 7].Value = sale.Date.ToString("yyyy-MM-dd hh:mm:ss");
 
             package.Save();
         }
@@ -270,7 +271,8 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[newRow, 5].Value = log.Quantity;
             worksheet.Cells[newRow, 6].Value = log.StockBefore;
             worksheet.Cells[newRow, 7].Value = log.StockAfter;
-            worksheet.Cells[newRow, 8].Value = log.Date.ToString("yyyy-MM-dd HH:mm:ss");
+            worksheet.Cells[newRow, 8].Value = log.Reason;
+            worksheet.Cells[newRow, 9].Value = log.Date.ToString("yyyy-MM-dd hh:mm:ss");
 
             package.Save();
         }

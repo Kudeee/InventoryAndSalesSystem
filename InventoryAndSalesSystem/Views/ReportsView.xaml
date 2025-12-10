@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:InventoryAndSalesSystem.Views"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-             mc:Ignorable="d" d:DesignWidth="800" Height="758">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="760" VerticalAlignment="Top">
-        <StackPanel Height="767">
+             mc:Ignorable="d" >
+   <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
             <!-- Header -->
             <StackPanel Margin="0,0,0,20">
                 <TextBlock Text="Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
@@ -61,7 +61,7 @@
 
                 <!-- Recent Sales -->
                 <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" 
-                       BorderThickness="1" CornerRadius="8" Padding="20" Height="104" VerticalAlignment="Top">
+                       BorderThickness="1" CornerRadius="8" Padding="20">
                     <StackPanel>
                         <TextBlock Text="Recent Sales" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
                         <DataGrid ItemsSource="{Binding RecentSales}"
@@ -74,7 +74,7 @@
                                 <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="*"/>
                                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
                                 <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=C, ConverterCulture='en-PH'}" Width="80"/>
-                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='MM/dd HH:mm'}" Width="100"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='MM/dd hh:mm tt'}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -93,9 +93,10 @@
                                  MaxHeight="300">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="*"/>
-                                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="70"/>
+                                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="100"/>
                                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
-                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='MM/dd HH:mm'}" Width="100"/>
+                                <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="100"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat='MM/dd hh:mm tt'}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
