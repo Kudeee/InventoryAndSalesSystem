@@ -45,7 +45,7 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[1, 1].Value = "ID";
             worksheet.Cells[1, 2].Value = "Name";
             worksheet.Cells[1, 3].Value = "Category";
-            worksheet.Cells[1, 4].Value = "UnitPrice";
+            worksheet.Cells[1, 4].Value = "UnitCost";
             worksheet.Cells[1, 5].Value = "Price";
             worksheet.Cells[1, 6].Value = "Stock";
             worksheet.Cells[1, 7].Value = "MinStock";
@@ -187,6 +187,11 @@ namespace InventoryAndSalesSystem.Services
             {
                 if (worksheet.Cells[row, 1].Value == null) continue;
 
+                var dateValue = worksheet.Cells[row, 7].Value?.ToString();
+                DateTime parsedDate = string.IsNullOrWhiteSpace(dateValue) 
+                    ? DateTime.Now 
+                    : DateTime.Parse(dateValue);
+
                 sales.Add(new Sale
                 {
                     Id = int.Parse(worksheet.Cells[row, 1].Value.ToString()!),
@@ -194,7 +199,7 @@ namespace InventoryAndSalesSystem.Services
                     ProductName = worksheet.Cells[row, 3].Value?.ToString() ?? "",
                     Quantity = int.Parse(worksheet.Cells[row, 4].Value?.ToString() ?? "0"),
                     Price = decimal.Parse(worksheet.Cells[row, 5].Value?.ToString() ?? "0"),
-                    Date = DateTime.Parse(worksheet.Cells[row, 7].Value?.ToString() ?? DateTime.Now.ToString())
+                    Date = parsedDate
                 });
             }
 
@@ -216,7 +221,7 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[newRow, 4].Value = sale.Quantity;
             worksheet.Cells[newRow, 5].Value = sale.Price;
             worksheet.Cells[newRow, 6].Value = sale.Total;
-            worksheet.Cells[newRow, 7].Value = sale.Date.ToString("yyyy-MM-dd hh:mm:ss");
+            worksheet.Cells[newRow, 7].Value = sale.Date.ToString("yyyy-MM-dd hh:mm:ss tt");
 
             package.Save();
         }
@@ -239,6 +244,12 @@ namespace InventoryAndSalesSystem.Services
             {
                 if (worksheet.Cells[row, 1].Value == null) continue;
 
+                // Fix: Read from column 9 for Date and handle empty values
+                var dateValue = worksheet.Cells[row, 9].Value?.ToString();
+                DateTime parsedDate = string.IsNullOrWhiteSpace(dateValue) 
+                    ? DateTime.Now 
+                    : DateTime.Parse(dateValue);
+
                 logs.Add(new StockLog
                 {
                     Id = int.Parse(worksheet.Cells[row, 1].Value.ToString()!),
@@ -248,7 +259,8 @@ namespace InventoryAndSalesSystem.Services
                     Quantity = int.Parse(worksheet.Cells[row, 5].Value?.ToString() ?? "0"),
                     StockBefore = int.Parse(worksheet.Cells[row, 6].Value?.ToString() ?? "0"),
                     StockAfter = int.Parse(worksheet.Cells[row, 7].Value?.ToString() ?? "0"),
-                    Date = DateTime.Parse(worksheet.Cells[row, 8].Value?.ToString() ?? DateTime.Now.ToString())
+                    Reason = worksheet.Cells[row, 8].Value?.ToString() ?? "",
+                    Date = parsedDate
                 });
             }
 
@@ -272,7 +284,7 @@ namespace InventoryAndSalesSystem.Services
             worksheet.Cells[newRow, 6].Value = log.StockBefore;
             worksheet.Cells[newRow, 7].Value = log.StockAfter;
             worksheet.Cells[newRow, 8].Value = log.Reason;
-            worksheet.Cells[newRow, 9].Value = log.Date.ToString("yyyy-MM-dd hh:mm:ss");
+            worksheet.Cells[newRow, 9].Value = log.Date.ToString("yyyy-MM-dd hh:mm:ss tt");
 
             package.Save();
         }

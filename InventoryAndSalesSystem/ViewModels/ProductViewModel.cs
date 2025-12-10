@@ -37,12 +37,16 @@ namespace InventoryAndSalesSystem.ViewModels
             _dataService = dataService;
             _products = new ObservableCollection<Product>();
 
+            // Initialize all commands
             SaveCommand = new RelayCommand(_ => SaveProduct());
             DeleteCommand = new RelayCommand(_ => DeleteProduct(), _ => SelectedProduct != null);
             SellCommand = new RelayCommand(_ => SellProduct(), _ => SelectedProduct != null && SellQuantity > 0);
             RestockCommand = new RelayCommand(_ => RestockProduct(), _ => SelectedProduct != null && RestockQuantity > 0);
             LoadCommand = new RelayCommand(_ => LoadProducts());
             ClearCommand = new RelayCommand(_ => ClearForm());
+            SalesReturnCommand = new RelayCommand(_ => ProcessSalesReturn(), _ => SelectedProduct != null && ReturnQuantity > 0);
+            PurchaseReturnCommand = new RelayCommand(_ => ProcessPurchaseReturn(), _ => SelectedProduct != null && ReturnQuantity > 0);
+            ProductLossCommand = new RelayCommand(_ => ProcessProductLoss(), _ => SelectedProduct != null && LossQuantity > 0);
 
             LoadProducts();
         }
@@ -150,6 +154,9 @@ namespace InventoryAndSalesSystem.ViewModels
         public ICommand RestockCommand { get; }
         public ICommand LoadCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand SalesReturnCommand { get; }
+        public ICommand PurchaseReturnCommand { get; }
+        public ICommand ProductLossCommand { get; }
 
         private void LoadProducts()
         {
@@ -239,7 +246,8 @@ namespace InventoryAndSalesSystem.ViewModels
             _dataService.SaveStockLog(stockLog);
 
             LoadProducts();
-            MessageBox.Show($"Sold {SellQuantity} units!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            SellQuantity = 1;
+            MessageBox.Show($"Sold {sale.Quantity} units!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void RestockProduct()
@@ -262,7 +270,8 @@ namespace InventoryAndSalesSystem.ViewModels
             _dataService.SaveStockLog(stockLog);
 
             LoadProducts();
-            MessageBox.Show($"Added {RestockQuantity} units!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            RestockQuantity = 1;
+            MessageBox.Show($"Added {stockLog.Quantity} units!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ClearForm()
@@ -319,7 +328,7 @@ namespace InventoryAndSalesSystem.ViewModels
             LoadProducts();
             ReturnReason = string.Empty;
             ReturnQuantity = 1;
-            MessageBox.Show($"Sales return processed: {ReturnQuantity} units returned to stock!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Sales return processed: {stockLog.Quantity} units returned to stock!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ProcessPurchaseReturn()
@@ -357,7 +366,7 @@ namespace InventoryAndSalesSystem.ViewModels
             LoadProducts();
             ReturnReason = string.Empty;
             ReturnQuantity = 1;
-            MessageBox.Show($"Purchase return processed: {ReturnQuantity} units returned to supplier!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Purchase return processed: {stockLog.Quantity} units returned to supplier!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ProcessProductLoss()
@@ -404,7 +413,7 @@ namespace InventoryAndSalesSystem.ViewModels
             LoadProducts();
             LossReason = string.Empty;
             LossQuantity = 1;
-            MessageBox.Show($"Product loss recorded: {LossQuantity} units removed from inventory!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Product loss recorded: {stockLog.Quantity} units removed from inventory!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         
