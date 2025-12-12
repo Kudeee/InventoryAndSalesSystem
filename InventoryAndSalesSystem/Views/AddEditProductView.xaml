@@ -28,19 +28,42 @@
             <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" 
                    BorderThickness="1" CornerRadius="5" Padding="20">
                 <StackPanel>
-                    <TextBlock Text="Product Details" FontSize="16" FontWeight="SemiBold" Margin="0,0,0, 10"/>
+                    <TextBlock Text="Product Details" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
 
                     <TextBlock Text="Product Name *" FontWeight="SemiBold" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" 
                             Height="35" Padding="8" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="Category" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" 
-                            Height="35" Padding="8" Margin="0,0,0,10"/>
+                    <TextBlock Text="Category *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding Categories}"
+                             SelectedItem="{Binding Category}"
+                             IsEditable="True"
+                             Height="35" Padding="8" Margin="0,0,0,10">
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter Property="Background">
+                                            <Setter.Value>
+                                                <VisualBrush Stretch="None" AlignmentX="Left">
+                                                    <VisualBrush.Visual>
+                                                        <TextBlock Text="Select or type category..." 
+                                                                  Foreground="#999999" 
+                                                                  Margin="10,0,0,0"
+                                                                  VerticalAlignment="Center"/>
+                                                    </VisualBrush.Visual>
+                                                </VisualBrush>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
                     
                    <TextBlock Text="Unit Cost *" FontWeight="SemiBold" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding UnitCost, UpdateSourceTrigger=PropertyChanged}"
-                               Height="35" Padding="8" Margin="0,0,0, 10"/>
+                               Height="35" Padding="8" Margin="0,0,0,10"/>
                     
                     <TextBlock Text="Price *" FontWeight="SemiBold" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding Price, UpdateSourceTrigger=PropertyChanged}" 
@@ -85,6 +108,10 @@
                                 <DataTemplate>
                                     <StackPanel Margin="5">
                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Category}" 
+                                                   FontSize="10" 
+                                                   Foreground="#2196F3"
+                                                   FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding UnitCost, StringFormat='Unit Cost: {0:C}', ConverterCulture='en-PH'}"
                                                    FontSize="11" Foreground="Gray"/>
                                         <TextBlock Text="{Binding Price, StringFormat='Price: {0:C}', ConverterCulture='en-PH'}" 

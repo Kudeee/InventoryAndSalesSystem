@@ -18,6 +18,7 @@ namespace InventoryAndSalesSystem.ViewModels
     {
         private readonly ExcelDataService _dataService;
         private ObservableCollection<Product> _products;
+        private ObservableCollection<Product> _filteredProducts;
         private Product? _selectedProduct;
         private string _name = string.Empty;
         private string _category = string.Empty;
@@ -31,11 +32,16 @@ namespace InventoryAndSalesSystem.ViewModels
         private int _lossQuantity = 1;
         private string _returnReason = string.Empty;
         private string _lossReason = string.Empty;
+        private string _searchText = string.Empty;
+        private string _selectedCategoryFilter = "All Categories";
+        private List<Product> _allProducts;
 
         public ProductViewModel(ExcelDataService dataService)
         {
             _dataService = dataService;
             _products = new ObservableCollection<Product>();
+            _filteredProducts = new ObservableCollection<Product>();
+            _allProducts = new List<Product>();
 
             // Initialize all commands
             SaveCommand = new RelayCommand(_ => SaveProduct());
@@ -47,6 +53,8 @@ namespace InventoryAndSalesSystem.ViewModels
             SalesReturnCommand = new RelayCommand(_ => ProcessSalesReturn(), _ => SelectedProduct != null && ReturnQuantity > 0);
             PurchaseReturnCommand = new RelayCommand(_ => ProcessPurchaseReturn(), _ => SelectedProduct != null && ReturnQuantity > 0);
             ProductLossCommand = new RelayCommand(_ => ProcessProductLoss(), _ => SelectedProduct != null && LossQuantity > 0);
+            SearchCommand = new RelayCommand(_ => ApplyFilters());
+            ClearSearchCommand = new RelayCommand(_ => ClearSearch());
 
             LoadProducts();
         }
@@ -55,6 +63,12 @@ namespace InventoryAndSalesSystem.ViewModels
         {
             get => _products;
             set { _products = value; OnPropertyChanged(); }
+        }
+
+        public ObservableCollection<Product> FilteredProducts
+        {
+            get => _filteredProducts;
+            set { _filteredProducts = value; OnPropertyChanged(); }
         }
 
         public Product? SelectedProduct
@@ -148,6 +162,40 @@ namespace InventoryAndSalesSystem.ViewModels
             set { _lossReason = value; OnPropertyChanged(); }
         }
 
+        public string SearchText
+        {
+            get => _searchText;
+            set 
+            { 
+                _searchText = value; 
+                OnPropertyChanged();
+                ApplyFilters();
+            }
+        }
+
+        public string SelectedCategoryFilter
+        {
+            get => _selectedCategoryFilter;
+            set 
+            { 
+                _selectedCategoryFilter = value; 
+                OnPropertyChanged();
+                ApplyFilters();
+            }
+        }
+
+        public List<string> Categories { get; } = new List<string>
+        {
+            "All Categories",
+            "Garments",
+            "Snacks",
+            "Biscuits",
+            "Beverages",
+            "Accessories",
+            "Souvenir Bag",
+            "Stuff Toy"
+        };
+
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand SellCommand { get; }
@@ -157,16 +205,53 @@ namespace InventoryAndSalesSystem.ViewModels
         public ICommand SalesReturnCommand { get; }
         public ICommand PurchaseReturnCommand { get; }
         public ICommand ProductLossCommand { get; }
+        public ICommand SearchCommand { get; }
+        public ICommand ClearSearchCommand { get; }
 
         private void LoadProducts()
         {
             Products.Clear();
-            var products = _dataService.GetAllProducts();
-            foreach (var product in products)
+            _allProducts = _dataService.GetAllProducts();
+            foreach (var product in _allProducts)
             {
                 Products.Add(product);
             }
+            ApplyFilters();
             CheckLowStock();
+        }
+
+        private void ApplyFilters()
+        {
+            var filtered = _allProducts.AsEnumerable();
+
+            // Apply category filter
+            if (!string.IsNullOrEmpty(SelectedCategoryFilter) && SelectedCategoryFilter != "All Categories")
+            {
+                filtered = filtered.Where(p => 
+                    p.Category.Equals(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                filtered = filtered.Where(p => 
+                    p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                    p.Category.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                    p.Id.ToString().Contains(SearchText));
+            }
+
+            FilteredProducts.Clear();
+            foreach (var product in filtered)
+            {
+                FilteredProducts.Add(product);
+            }
+        }
+
+        private void ClearSearch()
+        {
+            SearchText = string.Empty;
+            SelectedCategoryFilter = "All Categories";
+            ApplyFilters();
         }
 
         private void SaveProduct()
