@@ -36,7 +36,7 @@
                         <TextBlock Text="Product Information" FontWeight="SemiBold" Margin="0,0,0,10"/>
                         <TextBlock>
                             <Run Text="Price: " FontWeight="SemiBold"/>
-                            <Run Text="{Binding SelectedProduct.Price, StringFormat=C}"/>
+                            <Run Text="{Binding SelectedProduct.Price, StringFormat=C, ConverterCulture='en-PH'}"/>
                         </TextBlock>
                         <TextBlock>
                             <Run Text="Current Stock: " FontWeight="SemiBold"/>
