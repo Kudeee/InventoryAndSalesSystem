@@ -272,8 +272,20 @@ namespace InventoryAndSalesSystem.ViewModels
                 Stock = Stock,
                 MinStock = MinStock
             };
+            
+            var stockLog = new StockLog
+            {
+                ProductId = SelectedProduct?.Id ?? 0,
+                ProductName = Name,
+                Action = "New Product",
+                Quantity = Stock,
+                StockBefore = 0,
+                StockAfter = 0,
+                Date = DateTime.Now
+            };
 
             _dataService.SaveProduct(product);
+            _dataService.SaveStockLog(stockLog);
             LoadProducts();
             ClearForm();
             MessageBox.Show("Product saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
