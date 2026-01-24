@@ -8,77 +8,71 @@
              mc:Ignorable="d">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
-            <!-- Header -->
-            <StackPanel Margin="0,0,0,20">
-                <TextBlock Text="Advanced Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
-                <TextBlock Text="View comprehensive sales performance, profit margins, and inventory statistics" 
-                          FontSize="12" Foreground="Gray"/>
-            </StackPanel>
+            <!-- Header with Export Button -->
+            <Grid Margin="0,0,0,20">
+                <StackPanel HorizontalAlignment="Left">
+                    <TextBlock Text="Advanced Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="View comprehensive sales performance, profit margins, and inventory statistics" 
+                              FontSize="12" Foreground="Gray"/>
+                </StackPanel>
+                
+                <!-- Export Button in Upper Right Corner -->
+                <Button Content="📥 Export to PDF" 
+                       Command="{Binding ExportToPdfCommand}"
+                       Style="{StaticResource PrimaryButton}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Top"
+                       Width="180"
+                       Height="45"
+                       FontSize="14"/>
+            </Grid>
 
             <!-- Date Range Filter -->
             <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
                    CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="📅 Date Range:" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     
-                    <!-- Date Range and Filter Buttons Row -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="From" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
+                        <DatePicker SelectedDate="{Binding StartDate}" Height="35"/>
+                    </StackPanel>
 
-                        <TextBlock Grid.Column="0" Text="📅 Date Range:" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="From" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
-                            <DatePicker SelectedDate="{Binding StartDate}" Height="35"/>
-                        </StackPanel>
-
-                        <TextBlock Grid.Column="4" Text="to" VerticalAlignment="Center" Margin="5,15,5,0"/>
-                        
-                        <StackPanel Grid.Column="6">
-                            <TextBlock Text="To" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
-                            <DatePicker SelectedDate="{Binding EndDate}" Height="35"/>
-                        </StackPanel>
-
-                        <Button Grid.Column="8" Content="🔍 Apply Filter" 
-                               Command="{Binding ApplyFilterCommand}"
-                               Style="{StaticResource SecondaryButton}"
-                               Height="35" Margin="0,15,0,0"/>
-
-                        <Button Grid.Column="10" Content="↻ Reset" 
-                               Command="{Binding ResetFilterCommand}"
-                               Background="#757575"
-                               Foreground="White"
-                               Height="35" Margin="0,15,0,0"
-                               Padding="15,8"
-                               Cursor="Hand"
-                               FontWeight="SemiBold"
-                               BorderThickness="0"/>
-                    </Grid>
+                    <TextBlock Grid.Column="4" Text="to" VerticalAlignment="Center" Margin="5,15,5,0"/>
                     
-                    <!-- Export Button Row -->
-                    <Button Grid.Row="2" Content="📥 Export to PDF" 
-                           Command="{Binding ExportToPdfCommand}"
-                           Style="{StaticResource PrimaryButton}"
-                           Height="40"
-                           HorizontalAlignment="Right"
-                           Width="180"/>
+                    <StackPanel Grid.Column="6">
+                        <TextBlock Text="To" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
+                        <DatePicker SelectedDate="{Binding EndDate}" Height="35"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="8" Content="🔍 Apply Filter" 
+                           Command="{Binding ApplyFilterCommand}"
+                           Style="{StaticResource SecondaryButton}"
+                           Height="35" Margin="0,15,0,0"/>
+
+                    <Button Grid.Column="10" Content="↻ Reset" 
+                           Command="{Binding ResetFilterCommand}"
+                           Background="#757575"
+                           Foreground="White"
+                           Height="35" Margin="0,15,0,0"
+                           Padding="15,8"
+                           Cursor="Hand"
+                           FontWeight="SemiBold"
+                           BorderThickness="0"/>
                 </Grid>
             </Border>
 
