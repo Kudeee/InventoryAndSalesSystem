@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:InventoryAndSalesSystem.Views"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-             mc:Ignorable="d">
+             xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             mc:Ignorable="d"
+             Loaded="UserControl_Loaded">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <!-- Header with Export Button -->
@@ -21,7 +22,6 @@
                               FontSize="12" Foreground="Gray"/>
                 </StackPanel>
                 
-                <!-- Export Button in Upper Right Corner -->
                 <Button Grid.Column="1"
                        Content="📥 Export to PDF" 
                        Command="{Binding ExportToPdfCommand}"
@@ -133,7 +133,7 @@
                 </Border>
             </Grid>
 
-            <!-- Chart Type Selector and Chart -->
+            <!-- Chart Section with ScottPlot -->
             <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
                    CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
@@ -143,35 +143,17 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBlock Text="Chart Type:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <ComboBox ItemsSource="{Binding ReportTypes}"
-                                     SelectedItem="{Binding SelectedReportType}"
+                                     SelectedItem="{Binding SelectedReportType, Mode=TwoWay}"
+                                     SelectionChanged="ChartType_SelectionChanged"
                                      Width="150" Height="30"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Revenue Chart -->
-                    <lvc:CartesianChart Series="{Binding SalesSeries}"
-                                       XAxes="{Binding XAxes}"
-                                       Height="350"
-                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Revenue}">
-                    </lvc:CartesianChart>
-
-                    <!-- Profit Chart -->
-                    <lvc:CartesianChart Series="{Binding ProfitSeries}"
-                                       XAxes="{Binding ProfitXAxes}"
-                                       Height="350"
-                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Profit}">
-                    </lvc:CartesianChart>
-
-                    <!-- Units Sold Chart -->
-                    <lvc:CartesianChart Series="{Binding SalesSeries}"
-                                       XAxes="{Binding XAxes}"
-                                       Height="350"
-                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Units Sold}">
-                    </lvc:CartesianChart>
+                    <ScottPlot:WpfPlot x:Name="ChartControl" Height="400"/>
                 </StackPanel>
             </Border>
 
-            <!-- Profit Analysis Table -->
+            <!-- Product Profit Analysis Table -->
             <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
                    CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>

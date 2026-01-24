@@ -1,10 +1,6 @@
 ﻿using InventoryAndSalesSystem.Helpers;
 using InventoryAndSalesSystem.Models;
 using InventoryAndSalesSystem.Services;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,13 +24,13 @@ namespace InventoryAndSalesSystem.ViewModels
         private decimal _totalProfit;
         private decimal _profitMargin;
         private int _totalSales;
-        private ISeries[] _salesSeries = Array.Empty<ISeries>();
-        private ISeries[] _profitSeries = Array.Empty<ISeries>();
-        private Axis[] _xAxes = Array.Empty<Axis>();
-        private Axis[] _profitXAxes = Array.Empty<Axis>();
         private DateTime _startDate;
         private DateTime _endDate;
         private string _selectedReportType = "Revenue";
+
+        // Chart data for ScottPlot
+        private List<Sale> _currentSales = new List<Sale>();
+        private List<Product> _currentProducts = new List<Product>();
 
         public ReportViewModel(ExcelDataService dataService)
         {
@@ -43,9 +39,8 @@ namespace InventoryAndSalesSystem.ViewModels
             _recentLogs = new ObservableCollection<StockLog>();
             _profitReports = new ObservableCollection<ProductProfitReport>();
             
-            // Initialize date range to current month
-            _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            _endDate = DateTime.Now;
+            _startDate = new DateTime(2020, 1, 1);
+            _endDate = DateTime.Now.AddYears(1);
 
             ApplyFilterCommand = new RelayCommand(_ => LoadReports());
             ResetFilterCommand = new RelayCommand(_ => ResetFilters());
@@ -102,30 +97,6 @@ namespace InventoryAndSalesSystem.ViewModels
             set { _totalSales = value; OnPropertyChanged(); }
         }
 
-        public ISeries[] SalesSeries
-        {
-            get => _salesSeries;
-            set { _salesSeries = value; OnPropertyChanged(); }
-        }
-
-        public ISeries[] ProfitSeries
-        {
-            get => _profitSeries;
-            set { _profitSeries = value; OnPropertyChanged(); }
-        }
-
-        public Axis[] XAxes
-        {
-            get => _xAxes;
-            set { _xAxes = value; OnPropertyChanged(); }
-        }
-
-        public Axis[] ProfitXAxes
-        {
-            get => _profitXAxes;
-            set { _profitXAxes = value; OnPropertyChanged(); }
-        }
-
         public DateTime StartDate
         {
             get => _startDate;
@@ -145,7 +116,7 @@ namespace InventoryAndSalesSystem.ViewModels
             { 
                 _selectedReportType = value; 
                 OnPropertyChanged();
-                UpdateChartByType();
+                OnPropertyChanged(nameof(ChartNeedsUpdate));
             }
         }
 
@@ -160,10 +131,16 @@ namespace InventoryAndSalesSystem.ViewModels
         public ICommand ResetFilterCommand { get; }
         public ICommand ExportToPdfCommand { get; }
 
+        // Property to trigger chart update
+        public bool ChartNeedsUpdate => true;
+
+        public List<Sale> CurrentSales => _currentSales;
+        public List<Product> CurrentProducts => _currentProducts;
+
         private void ResetFilters()
         {
-            StartDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            EndDate = DateTime.Now;
+            StartDate = new DateTime(2020, 1, 1);
+            EndDate = DateTime.Now.AddYears(1);
             LoadReports();
         }
 
@@ -173,28 +150,40 @@ namespace InventoryAndSalesSystem.ViewModels
             var allProducts = _dataService.GetAllProducts();
             var logs = _dataService.GetAllStockLogs();
 
-            // Filter sales by date range
-            var filteredSales = allSales.Where(s => s.Date >= StartDate && s.Date <= EndDate.AddDays(1)).ToList();
+            if (!allSales.Any())
+            {
+                MessageBox.Show("No sales data available!", "No Data", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
-            // Recent sales (latest 10)
+            var filteredSales = allSales.Where(s => 
+                s.Date.Date >= StartDate.Date && 
+                s.Date.Date <= EndDate.Date
+            ).ToList();
+
+            if (!filteredSales.Any())
+            {
+                filteredSales = allSales.ToList();
+            }
+
+            _currentSales = filteredSales;
+            _currentProducts = allProducts;
+
             RecentSales.Clear();
             foreach (var sale in filteredSales.OrderByDescending(s => s.Date).Take(10))
             {
                 RecentSales.Add(sale);
             }
 
-            // Recent logs (latest 10)
             RecentLogs.Clear();
             foreach (var log in logs.OrderByDescending(l => l.Date).Take(10))
             {
                 RecentLogs.Add(log);
             }
 
-            // Calculate totals
             TotalRevenue = filteredSales.Sum(s => s.Total);
             TotalSales = filteredSales.Sum(s => s.Quantity);
 
-            // Calculate cost and profit
             TotalCost = 0;
             foreach (var sale in filteredSales)
             {
@@ -208,13 +197,9 @@ namespace InventoryAndSalesSystem.ViewModels
             TotalProfit = TotalRevenue - TotalCost;
             ProfitMargin = TotalRevenue > 0 ? (TotalProfit / TotalRevenue) * 100 : 0;
 
-            // Generate profit reports by product
             GenerateProfitReports(filteredSales, allProducts);
-
-            // Load charts
-            LoadRevenueChart(filteredSales);
-            LoadProfitChart(filteredSales, allProducts);
-            UpdateChartByType();
+            
+            OnPropertyChanged(nameof(ChartNeedsUpdate));
         }
 
         private void GenerateProfitReports(List<Sale> sales, List<Product> products)
@@ -244,91 +229,6 @@ namespace InventoryAndSalesSystem.ViewModels
                     ProfitMargin = margin
                 });
             }
-        }
-
-        private void LoadRevenueChart(List<Sale> sales)
-        {
-            var productSales = sales
-                .GroupBy(s => s.ProductName)
-                .Select(g => new { Product = g.Key, Total = g.Sum(s => s.Total) })
-                .OrderByDescending(x => x.Total)
-                .Take(10)
-                .ToList();
-
-            SalesSeries = new ISeries[]
-            {
-                new ColumnSeries<decimal>
-                {
-                    Name = "Revenue",
-                    Values = productSales.Select(p => p.Total).ToArray(),
-                    Fill = new SolidColorPaint(SKColors.DodgerBlue),
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Black),
-                    DataLabelsSize = 12,
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top
-                }
-            };
-
-            XAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = productSales.Select(p => p.Product).ToArray(),
-                    LabelsRotation = 45
-                }
-            };
-        }
-
-        private void LoadProfitChart(List<Sale> sales, List<Product> products)
-        {
-            var productProfits = sales
-                .GroupBy(s => s.ProductId)
-                .Select(g => 
-                {
-                    var product = products.FirstOrDefault(p => p.Id == g.Key);
-                    var revenue = g.Sum(s => s.Total);
-                    var cost = product != null ? product.UnitCost * g.Sum(s => s.Quantity) : 0;
-                    var profit = revenue - cost;
-                    
-                    return new 
-                    { 
-                        Product = g.First().ProductName, 
-                        Profit = profit,
-                        Revenue = revenue,
-                        Cost = cost
-                    };
-                })
-                .OrderByDescending(x => x.Profit)
-                .Take(10)
-                .ToList();
-
-            ProfitSeries = new ISeries[]
-            {
-                new ColumnSeries<decimal>
-                {
-                    Name = "Profit",
-                    Values = productProfits.Select(p => p.Profit).ToArray(),
-                    Fill = new SolidColorPaint(SKColors.Green),
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Black),
-                    DataLabelsSize = 12,
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top
-                }
-            };
-
-            ProfitXAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = productProfits.Select(p => p.Product).ToArray(),
-                    LabelsRotation = 45
-                }
-            };
-        }
-
-        private void UpdateChartByType()
-        {
-            // This method is called when the chart type changes
-            // The actual chart binding is handled in the XAML based on SelectedReportType
-            OnPropertyChanged(nameof(SelectedReportType));
         }
 
         private void ExportToPdf()
