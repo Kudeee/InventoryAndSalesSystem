@@ -10,7 +10,7 @@
 
 ## What's It About
 
-This is a comprehensive inventory management system designed to help businesses track products, manage stock levels, process sales, and generate reports. The application provides:
+This is a comprehensive inventory management system designed to help businesses track products, manage stock levels, process sales, and generate advanced reports with profit analysis. The application provides:
 
 - **Product Management**: Add, edit, and delete products with categories, pricing, and stock tracking
 - **Inventory Control**: Monitor stock levels with automatic low-stock alerts
@@ -20,7 +20,11 @@ This is a comprehensive inventory management system designed to help businesses 
   - Process sales returns (customer returns items)
   - Process purchase returns (return items to supplier)
   - Record product losses (expired, damaged, broken items)
-- **Reporting & Analytics**: View sales data, revenue, and top-performing products with charts
+- **Advanced Reporting & Analytics**: 
+  - View sales data with date range filtering
+  - Analyze profit margins and cost tracking
+  - Generate multiple chart types (Revenue, Profit, Units Sold)
+  - Export comprehensive reports to PDF
 - **Data Persistence**: All data stored in Excel files using EPPlus library
 
 ## Tech Stack
@@ -34,6 +38,7 @@ This is a comprehensive inventory management system designed to help businesses 
 ### Key NuGet Packages
 - **EPPlus 7.0.3** - Excel file manipulation for data storage
 - **LiveChartsCore.SkiaSharpView.WPF 2.0.0-rc2** - Data visualization and charting
+- **itext7 8.0.2** - PDF generation and export functionality
 
 ### Design Patterns
 - **MVVM (Model-View-ViewModel)** - Separation of concerns
@@ -52,7 +57,7 @@ InventoryAndSalesSystem/
 ├── ViewModels/              # Business logic and data binding
 │   ├── MainViewModel.cs
 │   ├── ProductViewModel.cs
-│   └── ReportViewModel.cs
+│   └── ReportViewModel.cs  # Enhanced with profit analysis
 ├── Views/                   # UI components
 │   ├── ProductListView.xaml
 │   ├── AddEditProductView.xaml
@@ -61,12 +66,14 @@ InventoryAndSalesSystem/
 │   ├── SalesReturnView.xaml
 │   ├── PurchaseReturnView.xaml
 │   ├── ProductLossView.xaml
-│   └── ReportsView.xaml
+│   └── ReportsView.xaml    # Enhanced with advanced features
 ├── Services/                # Data access layer
-│   └── ExcelDataService.cs
+│   ├── ExcelDataService.cs
+│   └── PdfExportService.cs # NEW: PDF report generation
 ├── Helpers/                 # Utility classes
 │   ├── RelayCommand.cs
-│   └── ValueConverters.cs
+│   ├── ValueConverters.cs
+│   └── ReportConverters.cs # NEW: Report-specific converters
 ├── Data/                    # Excel data files (generated at runtime)
 │   ├── Products.xlsx
 │   ├── Sales.xlsx
@@ -196,15 +203,30 @@ Delete Product:
 8. StockLog created with action "Loss" and reason
 ```
 
-### 5. Reporting Flow
+### 5. Advanced Reporting Flow (NEW)
 ```
 1. Navigate to "Reports"
-2. View statistics:
-   - Total Revenue (sum of all sales)
+2. Set date range filter (From/To dates)
+3. Click "Apply Filter" to update statistics
+4. View comprehensive analytics:
+   - Total Revenue
+   - Total Cost
+   - Net Profit
+   - Profit Margin %
    - Total Units Sold
-3. View chart: Top 10 products by revenue
-4. Review recent sales (last 10 transactions)
-5. Review recent stock activity (last 10 logs)
+5. Switch between chart types:
+   - Revenue Chart (top products by revenue)
+   - Profit Chart (top products by profit)
+   - Units Sold Chart (top products by quantity)
+6. Review Product Profit Analysis table:
+   - Per-product revenue, cost, profit, and margin
+   - Color-coded profit indicators
+7. Check Recent Sales (last 10 transactions)
+8. Review Recent Stock Activity (last 10 logs)
+9. Export entire report to PDF:
+   - Click "Export to PDF" button
+   - Choose save location
+   - Professional PDF generated with all data
 ```
 
 ## Data Storage Schema
@@ -215,7 +237,7 @@ Delete Product:
 | ID | int | Unique identifier |
 | Name | string | Product name |
 | Category | string | Product category |
-| UnitCost | decimal | Cost per unit |
+| UnitCost | decimal | Cost per unit (for profit calculation) |
 | Price | decimal | Selling price |
 | Stock | int | Current stock quantity |
 | MinStock | int | Minimum stock threshold |
@@ -268,6 +290,14 @@ Predefined categories (editable via ComboBox):
 - Real-time filtering as you type
 - Shows filtered count vs total count
 
+### Advanced Reporting Features (NEW)
+- **Date Range Filtering**: Filter reports by custom date ranges
+- **Profit Margin Calculation**: Automatic calculation of profit margins
+- **Cost Tracking**: Track unit costs vs selling prices
+- **Multiple Chart Types**: Switch between Revenue, Profit, and Units Sold views
+- **Product Profit Analysis**: Detailed per-product profitability breakdown
+- **PDF Export**: Generate professional PDF reports with all analytics
+
 ### Currency Formatting
 - Uses Philippine Peso (en-PH culture)
 - Format: ₱X,XXX.XX
@@ -282,11 +312,13 @@ Predefined categories (editable via ComboBox):
 - Plain C# classes with INotifyPropertyChanged
 - Represent data entities
 - No business logic
+- **ProductProfitReport** (NEW): Model for profit analysis data
 
 ### Views
 - XAML files defining UI
 - No code-behind logic (except InitializeComponent)
 - Bound to ViewModels via DataContext
+- **Enhanced ReportsView**: Advanced analytics with date filters and PDF export
 
 ### ViewModels
 - Implement INotifyPropertyChanged
@@ -294,10 +326,44 @@ Predefined categories (editable via ComboBox):
 - Implement commands for user actions
 - Handle business logic and data validation
 - Interact with Services for data persistence
+- **Enhanced ReportViewModel**: Profit calculations, date filtering, PDF export
 
 ### Services
-- ExcelDataService: Handles all data persistence
+- **ExcelDataService**: Handles all Excel data persistence
+- **PdfExportService** (NEW): Generates professional PDF reports
 - Separates data access from business logic
+
+### Helpers
+- **RelayCommand**: Command pattern implementation
+- **ValueConverters**: Standard UI converters
+- **ReportConverters** (NEW): Report-specific converters
+  - ReportTypeToVisibilityConverter
+  - ProfitColorConverter
+
+## PDF Export Features (NEW)
+
+### Report Contents
+The PDF export includes:
+- **Professional Header**: System name and report title
+- **Date Range**: Report period display
+- **Summary Statistics**: Color-coded cards with:
+  - Total Revenue (Green)
+  - Total Cost (Orange)
+  - Net Profit (Blue/Red)
+  - Profit Margin (Purple)
+  - Total Units Sold
+- **Product Profit Analysis**: Top 20 products with revenue, cost, profit, and margin
+- **Recent Sales**: Last 15 transactions
+- **Recent Stock Activity**: Last 15 stock movements
+- **Footer**: Generation timestamp
+
+### PDF Formatting
+- Color-coded headers (blue background, white text)
+- Profit highlighting (green for positive, red for negative)
+- Philippine Peso currency formatting
+- Professional table layouts with borders
+- Proper alignment and spacing
+- Auto-generated timestamped filenames
 
 ## Common Issues & Solutions
 
@@ -313,6 +379,12 @@ Predefined categories (editable via ComboBox):
 ### Issue: Chart not displaying
 **Solution:** Ensure sales data exists; chart shows top 10 products
 
+### Issue: PDF export fails
+**Solution:** Ensure itext7 package is installed; check file permissions for save location
+
+### Issue: iText7 color errors
+**Solution:** Use `new DeviceRgb(r, g, b)` instead of color constants
+
 ## Development Best Practices
 
 1. **Always validate user input** before processing
@@ -325,25 +397,87 @@ Predefined categories (editable via ComboBox):
 8. **Follow MVVM pattern** - keep code-behind minimal
 9. **Use RelayCommand** for all button/action bindings
 10. **Maintain data consistency** - update related tables together
+11. **Track unit costs** for accurate profit calculations (NEW)
+12. **Use date filtering** for time-based analysis (NEW)
+13. **Handle PDF generation errors** gracefully (NEW)
+
+## Profit Calculation Logic (NEW)
+
+### How Profit is Calculated
+```csharp
+// Per Sale
+Revenue = Quantity × Selling Price
+Cost = Quantity × Unit Cost
+Profit = Revenue - Cost
+Profit Margin = (Profit / Revenue) × 100
+
+// Total (for period)
+Total Revenue = Sum of all sales revenue
+Total Cost = Sum of (quantity × unit cost) for all sales
+Total Profit = Total Revenue - Total Cost
+Profit Margin = (Total Profit / Total Revenue) × 100
+```
+
+### Important Notes
+- Unit Cost must be set when adding/editing products
+- Profit calculations use the Unit Cost from the product record
+- Historical sales use the Unit Cost at time of sale
+- Negative profit margins indicate selling below cost
 
 ## Future Enhancement Ideas
 
-- Multi-user support with user authentication
-- Database migration (SQL Server, SQLite)
-- Barcode scanning integration
-- Print receipts/invoices
-- Advanced reporting (date ranges, profit margins)
-- Export reports to PDF
+- ~~Multi-user support with user authentication~~
+- ~~Database migration (SQL Server, SQLite)~~
+- ~~Barcode scanning integration~~
+- ~~Print receipts/invoices~~
+- ✅ **Advanced reporting (date ranges, profit margins)** - IMPLEMENTED
+- ✅ **Export reports to PDF** - IMPLEMENTED
 - Cloud backup integration
 - Mobile app companion
 - Supplier management
 - Multi-location inventory tracking
+- Batch import/export of products
+- Custom report templates
+- Email report delivery
+- Scheduled automated reports
 
 ## License & Dependencies
 
 - **EPPlus**: NonCommercial license (set in App.xaml.cs)
 - **LiveChartsCore**: MIT License
+- **itext7**: AGPL License (or Commercial License required for commercial use)
 - **.NET**: Microsoft License
+
+## Installation & Setup
+
+### Prerequisites
+- .NET 8.0 SDK or later
+- Visual Studio 2022 or later (recommended)
+- Windows 10/11
+
+### Installation Steps
+1. Clone or download the project
+2. Open `InventoryAndSalesSystem.sln` in Visual Studio
+3. Restore NuGet packages:
+   ```bash
+   dotnet restore
+   ```
+4. Build the solution:
+   ```bash
+   dotnet build
+   ```
+5. Run the application:
+   ```bash
+   dotnet run
+   ```
+   or press F5 in Visual Studio
+
+### Required NuGet Packages
+```bash
+dotnet add package EPPlus --version 7.0.3
+dotnet add package LiveChartsCore.SkiaSharpView.WPF --version 2.0.0-rc2
+dotnet add package itext7 --version 8.0.2
+```
 
 ## Support & Contact
 
@@ -352,3 +486,23 @@ For issues or questions, refer to:
 - .NET WPF documentation: https://docs.microsoft.com/wpf
 - EPPlus documentation: https://github.com/EPPlusSoftware/EPPlus
 - LiveCharts documentation: https://livecharts.dev/
+- iText7 documentation: https://itextpdf.com/resources/api-documentation
+
+## Version History
+
+### Version 2.0 (Current)
+- ✅ Added advanced reporting with date range filtering
+- ✅ Implemented profit margin calculations and cost tracking
+- ✅ Added multiple chart types (Revenue, Profit, Units Sold)
+- ✅ Integrated PDF export functionality
+- ✅ Enhanced product profit analysis
+- ✅ Added ReportConverters for better UI handling
+
+### Version 1.0
+- Initial release with basic inventory management
+- Product CRUD operations
+- Sales processing
+- Stock management (Restock, Returns, Losses)
+- Basic reporting with charts
+- Low stock alerts
+- Excel data persistence
