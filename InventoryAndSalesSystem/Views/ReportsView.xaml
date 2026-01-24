@@ -10,21 +10,31 @@
         <StackPanel>
             <!-- Header with Export Button -->
             <Grid Margin="0,0,0,20">
-                <StackPanel HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
                     <TextBlock Text="Advanced Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
                     <TextBlock Text="View comprehensive sales performance, profit margins, and inventory statistics" 
                               FontSize="12" Foreground="Gray"/>
                 </StackPanel>
                 
                 <!-- Export Button in Upper Right Corner -->
-                <Button Content="📥 Export to PDF" 
+                <Button Grid.Column="1"
+                       Content="📥 Export to PDF" 
                        Command="{Binding ExportToPdfCommand}"
-                       Style="{StaticResource PrimaryButton}"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Top"
+                       Background="#4CAF50"
+                       Foreground="White"
                        Width="180"
                        Height="45"
-                       FontSize="14"/>
+                       FontSize="14"
+                       Padding="15,8"
+                       Margin="20,0,0,0"
+                       Cursor="Hand"
+                       FontWeight="SemiBold"
+                       BorderThickness="0"/>
             </Grid>
 
             <!-- Date Range Filter -->
@@ -152,7 +162,7 @@
                                        Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Profit}">
                     </lvc:CartesianChart>
 
-                    <!-- Units Sold Chart (uses revenue series but different display) -->
+                    <!-- Units Sold Chart -->
                     <lvc:CartesianChart Series="{Binding SalesSeries}"
                                        XAxes="{Binding XAxes}"
                                        Height="350"
