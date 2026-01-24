@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryAndSalesSystem.Services
 {
@@ -187,10 +185,7 @@ namespace InventoryAndSalesSystem.Services
             {
                 if (worksheet.Cells[row, 1].Value == null) continue;
 
-                var dateValue = worksheet.Cells[row, 7].Value?.ToString();
-                DateTime parsedDate = string.IsNullOrWhiteSpace(dateValue) 
-                    ? DateTime.Now 
-                    : DateTime.Parse(dateValue);
+                DateTime parsedDate = ParseExcelDate(worksheet.Cells[row, 7].Value);
 
                 sales.Add(new Sale
                 {
@@ -244,11 +239,7 @@ namespace InventoryAndSalesSystem.Services
             {
                 if (worksheet.Cells[row, 1].Value == null) continue;
 
-                // Fix: Read from column 9 for Date and handle empty values
-                var dateValue = worksheet.Cells[row, 9].Value?.ToString();
-                DateTime parsedDate = string.IsNullOrWhiteSpace(dateValue) 
-                    ? DateTime.Now 
-                    : DateTime.Parse(dateValue);
+                DateTime parsedDate = ParseExcelDate(worksheet.Cells[row, 9].Value);
 
                 logs.Add(new StockLog
                 {
@@ -293,6 +284,60 @@ namespace InventoryAndSalesSystem.Services
         {
             var logs = GetAllStockLogs();
             return logs.Any() ? logs.Max(l => l.Id) + 1 : 1;
+        }
+
+        /// <summary>
+        /// Parses Excel date values which can be either:
+        /// - Double (Excel serial date number like 45663)
+        /// - DateTime object
+        /// - String (formatted date)
+        /// </summary>
+        private DateTime ParseExcelDate(object? cellValue)
+        {
+            if (cellValue == null)
+                return DateTime.Now;
+
+            // If it's already a DateTime, return it
+            if (cellValue is DateTime dateTime)
+                return dateTime;
+
+            // If it's a double (Excel serial date), convert it
+            if (cellValue is double serialDate)
+            {
+                try
+                {
+                    return DateTime.FromOADate(serialDate);
+                }
+                catch
+                {
+                    return DateTime.Now;
+                }
+            }
+
+            // If it's a string, try to parse it
+            var dateString = cellValue.ToString();
+            if (string.IsNullOrWhiteSpace(dateString))
+                return DateTime.Now;
+
+            // Try parsing as double first (in case it's stored as string)
+            if (double.TryParse(dateString, out double serialNumber))
+            {
+                try
+                {
+                    return DateTime.FromOADate(serialNumber);
+                }
+                catch
+                {
+                    // Fall through to string parsing
+                }
+            }
+
+            // Try parsing as formatted date string
+            if (DateTime.TryParse(dateString, out DateTime parsedDate))
+                return parsedDate;
+
+            // If all else fails, return current time
+            return DateTime.Now;
         }
     }
 }

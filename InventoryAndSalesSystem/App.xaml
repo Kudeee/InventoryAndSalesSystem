@@ -10,6 +10,8 @@
         <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <helpers:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
         <helpers:MultiplyConverter x:Key="MultiplyConverter"/>
+        <helpers:ReportTypeToVisibilityConverter x:Key="ReportTypeToVisibilityConverter"/>
+        <helpers:ProfitColorConverter x:Key="ProfitColorConverter"/>
 
         <Style TargetType="Button">
             <Setter Property="Padding" Value="15,8"/>

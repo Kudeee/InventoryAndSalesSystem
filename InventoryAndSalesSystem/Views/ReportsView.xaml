@@ -5,21 +5,92 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:InventoryAndSalesSystem.Views"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-             mc:Ignorable="d" >
-   <ScrollViewer VerticalScrollBarVisibility="Auto">
+             mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <!-- Header -->
             <StackPanel Margin="0,0,0,20">
-                <TextBlock Text="Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
-                <TextBlock Text="View your sales performance and inventory statistics" 
+                <TextBlock Text="Advanced Sales Reports &amp; Analytics" FontSize="22" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBlock Text="View comprehensive sales performance, profit margins, and inventory statistics" 
                           FontSize="12" Foreground="Gray"/>
             </StackPanel>
+
+            <!-- Date Range Filter -->
+            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
+                   CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Date Range and Filter Buttons Row -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="📅 Date Range:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="From" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
+                            <DatePicker SelectedDate="{Binding StartDate}" Height="35"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="4" Text="to" VerticalAlignment="Center" Margin="5,15,5,0"/>
+                        
+                        <StackPanel Grid.Column="6">
+                            <TextBlock Text="To" FontSize="10" Foreground="Gray" Margin="0,0,0,2"/>
+                            <DatePicker SelectedDate="{Binding EndDate}" Height="35"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="8" Content="🔍 Apply Filter" 
+                               Command="{Binding ApplyFilterCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               Height="35" Margin="0,15,0,0"/>
+
+                        <Button Grid.Column="10" Content="↻ Reset" 
+                               Command="{Binding ResetFilterCommand}"
+                               Background="#757575"
+                               Foreground="White"
+                               Height="35" Margin="0,15,0,0"
+                               Padding="15,8"
+                               Cursor="Hand"
+                               FontWeight="SemiBold"
+                               BorderThickness="0"/>
+                    </Grid>
+                    
+                    <!-- Export Button Row -->
+                    <Button Grid.Row="2" Content="📥 Export to PDF" 
+                           Command="{Binding ExportToPdfCommand}"
+                           Style="{StaticResource PrimaryButton}"
+                           Height="40"
+                           HorizontalAlignment="Right"
+                           Width="180"/>
+                </Grid>
+            </Border>
 
             <!-- Statistics Cards -->
             <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -27,28 +98,116 @@
                     <StackPanel>
                         <TextBlock Text="💰 Total Revenue" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
                         <TextBlock Text="{Binding TotalRevenue, StringFormat=C, ConverterCulture='en-PH'}" 
-                                  Foreground="White" FontSize="32" FontWeight="Bold"/>
+                                  Foreground="White" FontSize="28" FontWeight="Bold"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#2196F3" CornerRadius="8" Padding="20">
+                <Border Grid.Column="2" Background="#FF9800" CornerRadius="8" Padding="20">
                     <StackPanel>
-                        <TextBlock Text="📦 Total Units Sold" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
-                        <TextBlock Text="{Binding TotalSales}" 
-                                  Foreground="White" FontSize="32" FontWeight="Bold"/>
+                        <TextBlock Text="💵 Total Cost" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding TotalCost, StringFormat=C, ConverterCulture='en-PH'}" 
+                                  Foreground="White" FontSize="28" FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Background="#2196F3" CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="📈 Net Profit" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding TotalProfit, StringFormat=C, ConverterCulture='en-PH'}" 
+                                  Foreground="White" FontSize="28" FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6" Background="#9C27B0" CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="📊 Profit Margin" Foreground="White" FontSize="14" Margin="0,0,0,10"/>
+                        <TextBlock Foreground="White" FontSize="28" FontWeight="Bold">
+                            <Run Text="{Binding ProfitMargin, StringFormat='{}{0:F2}'}"/>
+                            <Run Text="%" FontSize="20"/>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!-- Chart -->
+            <!-- Chart Type Selector and Chart -->
             <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
                    CornerRadius="8" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="Top Products by Revenue" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <Grid Margin="0,0,0,15">
+                        <TextBlock Text="Performance Charts" FontSize="18" FontWeight="SemiBold" 
+                                  VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="Chart Type:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox ItemsSource="{Binding ReportTypes}"
+                                     SelectedItem="{Binding SelectedReportType}"
+                                     Width="150" Height="30"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Revenue Chart -->
                     <lvc:CartesianChart Series="{Binding SalesSeries}"
                                        XAxes="{Binding XAxes}"
-                                       Height="350">
+                                       Height="350"
+                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Revenue}">
                     </lvc:CartesianChart>
+
+                    <!-- Profit Chart -->
+                    <lvc:CartesianChart Series="{Binding ProfitSeries}"
+                                       XAxes="{Binding ProfitXAxes}"
+                                       Height="350"
+                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Profit}">
+                    </lvc:CartesianChart>
+
+                    <!-- Units Sold Chart (uses revenue series but different display) -->
+                    <lvc:CartesianChart Series="{Binding SalesSeries}"
+                                       XAxes="{Binding XAxes}"
+                                       Height="350"
+                                       Visibility="{Binding SelectedReportType, Converter={StaticResource ReportTypeToVisibilityConverter}, ConverterParameter=Units Sold}">
+                    </lvc:CartesianChart>
+                </StackPanel>
+            </Border>
+
+            <!-- Profit Analysis Table -->
+            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
+                   CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="Product Profit Analysis" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <DataGrid ItemsSource="{Binding ProfitReports}"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             AlternatingRowBackground="#F5F5F5"
+                             MaxHeight="400">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="*"/>
+                            <DataGridTextColumn Header="Units Sold" Binding="{Binding UnitsSold}" Width="100"/>
+                            <DataGridTextColumn Header="Revenue" Binding="{Binding Revenue, StringFormat=C, ConverterCulture='en-PH'}" Width="120"/>
+                            <DataGridTextColumn Header="Cost" Binding="{Binding Cost, StringFormat=C, ConverterCulture='en-PH'}" Width="120"/>
+                            <DataGridTextColumn Header="Profit" Binding="{Binding Profit, StringFormat=C, ConverterCulture='en-PH'}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Profit, Converter={StaticResource ProfitColorConverter}}" Value="Positive">
+                                                <Setter Property="Foreground" Value="#4CAF50"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Profit, Converter={StaticResource ProfitColorConverter}}" Value="Negative">
+                                                <Setter Property="Foreground" Value="#f44336"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Margin %" Binding="{Binding ProfitMargin, StringFormat='{}{0:F2}%'}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </StackPanel>
             </Border>
 
