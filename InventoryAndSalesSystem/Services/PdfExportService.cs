@@ -1,11 +1,8 @@
 ﻿using InventoryAndSalesSystem.Models;
 using InventoryAndSalesSystem.ViewModels;
-using iText.Kernel.Colors;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using iText.Layout.Borders;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,270 +25,283 @@ namespace InventoryAndSalesSystem.Services
             List<Sale> recentSales,
             List<StockLog> recentLogs)
         {
-            using (var writer = new PdfWriter(filePath))
-            using (var pdf = new PdfDocument(writer))
-            using (var document = new Document(pdf))
-            {
-                // Header
-                AddHeader(document);
+            QuestPDF.Settings.License = LicenseType.Community;
 
+            Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header().Element(ComposeHeader);
+                    page.Content().Element(content => ComposeContent(content, startDate, endDate, 
+                        totalRevenue, totalCost, totalProfit, profitMargin, totalSales, 
+                        profitReports, recentSales, recentLogs));
+                    page.Footer().Element(ComposeFooter);
+                });
+            })
+            .GeneratePdf(filePath);
+        }
+
+        void ComposeHeader(IContainer container)
+        {
+            container.Column(column =>
+            {
+                column.Item().AlignCenter().Text("INVENTORY MANAGEMENT SYSTEM")
+                    .FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
+                
+                column.Item().AlignCenter().Text("Sales & Profit Analysis Report")
+                    .FontSize(16).FontColor(Colors.Grey.Darken1);
+                
+                column.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+            });
+        }
+
+        void ComposeContent(IContainer container, DateTime startDate, DateTime endDate,
+            decimal totalRevenue, decimal totalCost, decimal totalProfit, decimal profitMargin, int totalSales,
+            List<ProductProfitReport> profitReports, List<Sale> recentSales, List<StockLog> recentLogs)
+        {
+            container.PaddingVertical(10).Column(column =>
+            {
                 // Date Range
-                AddDateRange(document, startDate, endDate);
+                column.Item().PaddingBottom(10).AlignCenter()
+                    .Text($"Report Period: {startDate:MMM dd, yyyy} to {endDate:MMM dd, yyyy}")
+                    .Italic().FontSize(12);
 
                 // Summary Statistics
-                AddSummaryStatistics(document, totalRevenue, totalCost, totalProfit, profitMargin, totalSales);
+                column.Item().PaddingBottom(20).Element(c => ComposeSummaryStats(c, totalRevenue, 
+                    totalCost, totalProfit, profitMargin, totalSales));
 
-                // Profit Analysis Table
-                AddProfitAnalysisTable(document, profitReports);
+                // Product Profit Analysis
+                if (profitReports.Any())
+                {
+                    column.Item().PaddingBottom(20).Element(c => ComposeProfitTable(c, profitReports));
+                }
 
                 // Recent Sales
-                AddRecentSalesTable(document, recentSales);
+                if (recentSales.Any())
+                {
+                    column.Item().PaddingBottom(20).Element(c => ComposeRecentSales(c, recentSales));
+                }
 
                 // Recent Stock Activity
-                AddRecentStockActivityTable(document, recentLogs);
-
-                // Footer
-                AddFooter(document);
-            }
+                if (recentLogs.Any())
+                {
+                    column.Item().Element(c => ComposeStockActivity(c, recentLogs));
+                }
+            });
         }
 
-        private void AddHeader(Document document)
-        {
-            var header = new Paragraph("INVENTORY MANAGEMENT SYSTEM")
-                .SetFontSize(24)
-                .SetBold()
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(5);
-            document.Add(header);
-
-            var subheader = new Paragraph("Sales & Profit Analysis Report")
-                .SetFontSize(16)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(20);
-            document.Add(subheader);
-        }
-
-        private void AddDateRange(Document document, DateTime startDate, DateTime endDate)
-        {
-            var dateRange = new Paragraph($"Report Period: {startDate:MMM dd, yyyy} to {endDate:MMM dd, yyyy}")
-                .SetFontSize(12)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(20)
-                .SetItalic();
-            document.Add(dateRange);
-        }
-
-        private void AddSummaryStatistics(Document document, decimal totalRevenue, decimal totalCost, 
+        void ComposeSummaryStats(IContainer container, decimal totalRevenue, decimal totalCost, 
             decimal totalProfit, decimal profitMargin, int totalSales)
         {
-            var title = new Paragraph("Summary Statistics")
-                .SetFontSize(18)
-                .SetBold()
-                .SetMarginBottom(10);
-            document.Add(title);
-
-            var table = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1, 1, 1 }))
-                .UseAllAvailableWidth()
-                .SetMarginBottom(20);
-
-            // Headers
-            AddTableHeader(table, "Total Revenue");
-            AddTableHeader(table, "Total Cost");
-            AddTableHeader(table, "Net Profit");
-            AddTableHeader(table, "Profit Margin");
-
-            // Values
-            AddTableCell(table, $"₱{totalRevenue:N2}", new DeviceRgb(76, 175, 80)); // Green
-            AddTableCell(table, $"₱{totalCost:N2}", new DeviceRgb(255, 152, 0)); // Orange
-            AddTableCell(table, $"₱{totalProfit:N2}", totalProfit >= 0 ? new DeviceRgb(33, 150, 243) : new DeviceRgb(244, 67, 54)); // Blue or Red
-            AddTableCell(table, $"{profitMargin:F2}%", new DeviceRgb(156, 39, 176)); // Purple
-
-            document.Add(table);
-
-            var totalSalesInfo = new Paragraph($"Total Units Sold: {totalSales}")
-                .SetFontSize(12)
-                .SetBold()
-                .SetMarginBottom(20);
-            document.Add(totalSalesInfo);
-        }
-
-        private void AddProfitAnalysisTable(Document document, List<ProductProfitReport> profitReports)
-        {
-            var title = new Paragraph("Product Profit Analysis")
-                .SetFontSize(18)
-                .SetBold()
-                .SetMarginBottom(10);
-            document.Add(title);
-
-            if (!profitReports.Any())
+            container.Column(column =>
             {
-                document.Add(new Paragraph("No data available for the selected period.")
-                    .SetItalic()
-                    .SetMarginBottom(20));
-                return;
-            }
-
-            var table = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1.5f, 2, 2, 2, 1.5f }))
-                .UseAllAvailableWidth()
-                .SetMarginBottom(20);
-
-            // Headers
-            AddTableHeader(table, "Product Name");
-            AddTableHeader(table, "Units Sold");
-            AddTableHeader(table, "Revenue");
-            AddTableHeader(table, "Cost");
-            AddTableHeader(table, "Profit");
-            AddTableHeader(table, "Margin %");
-
-            // Data rows
-            foreach (var report in profitReports.OrderByDescending(r => r.Profit).Take(20))
-            {
-                table.AddCell(CreateCell(report.ProductName));
-                table.AddCell(CreateCell(report.UnitsSold.ToString()));
-                table.AddCell(CreateCell($"₱{report.Revenue:N2}"));
-                table.AddCell(CreateCell($"₱{report.Cost:N2}"));
+                column.Item().Text("Summary Statistics").FontSize(16).Bold();
                 
-                var profitCell = CreateCell($"₱{report.Profit:N2}");
-                if (report.Profit > 0)
-                    profitCell.SetFontColor(new DeviceRgb(76, 175, 80)).SetBold(); // Green
-                else if (report.Profit < 0)
-                    profitCell.SetFontColor(new DeviceRgb(244, 67, 54)).SetBold(); // Red
-                table.AddCell(profitCell);
+                column.Item().PaddingTop(10).Row(row =>
+                {
+                    row.RelativeItem().Background(Colors.Green.Lighten3).Padding(10)
+                        .Column(col =>
+                        {
+                            col.Item().Text("Total Revenue").FontSize(10).Bold();
+                            col.Item().Text($"₱{totalRevenue:N2}").FontSize(16).Bold();
+                        });
+                    
+                    row.Spacing(5);
+                    
+                    row.RelativeItem().Background(Colors.Orange.Lighten3).Padding(10)
+                        .Column(col =>
+                        {
+                            col.Item().Text("Total Cost").FontSize(10).Bold();
+                            col.Item().Text($"₱{totalCost:N2}").FontSize(16).Bold();
+                        });
+                    
+                    row.Spacing(5);
+                    
+                    row.RelativeItem().Background(totalProfit >= 0 ? Colors.Blue.Lighten3 : Colors.Red.Lighten3)
+                        .Padding(10).Column(col =>
+                        {
+                            col.Item().Text("Net Profit").FontSize(10).Bold();
+                            col.Item().Text($"₱{totalProfit:N2}").FontSize(16).Bold();
+                        });
+                    
+                    row.Spacing(5);
+                    
+                    row.RelativeItem().Background(Colors.Purple.Lighten3).Padding(10)
+                        .Column(col =>
+                        {
+                            col.Item().Text("Profit Margin").FontSize(10).Bold();
+                            col.Item().Text($"{profitMargin:F2}%").FontSize(16).Bold();
+                        });
+                });
                 
-                table.AddCell(CreateCell($"{report.ProfitMargin:F2}%"));
-            }
-
-            document.Add(table);
+                column.Item().PaddingTop(10).Text($"Total Units Sold: {totalSales}").Bold();
+            });
         }
 
-        private void AddRecentSalesTable(Document document, List<Sale> recentSales)
+        void ComposeProfitTable(IContainer container, List<ProductProfitReport> reports)
         {
-            var title = new Paragraph("Recent Sales Transactions")
-                .SetFontSize(18)
-                .SetBold()
-                .SetMarginTop(20)
-                .SetMarginBottom(10);
-            document.Add(title);
-
-            if (!recentSales.Any())
+            container.Column(column =>
             {
-                document.Add(new Paragraph("No sales data available.")
-                    .SetItalic()
-                    .SetMarginBottom(20));
-                return;
-            }
+                column.Item().Text("Product Profit Analysis").FontSize(16).Bold();
+                
+                column.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(3);
+                        columns.RelativeColumn(1.5f);
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(1.5f);
+                    });
 
-            var table = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1.5f, 2, 2 }))
-                .UseAllAvailableWidth()
-                .SetMarginBottom(20);
+                    // Header
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Product Name").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Units Sold").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Revenue").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Cost").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Profit").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Margin %").FontColor(Colors.White).Bold();
+                    });
 
-            // Headers
-            AddTableHeader(table, "Product");
-            AddTableHeader(table, "Quantity");
-            AddTableHeader(table, "Total");
-            AddTableHeader(table, "Date");
+                    // Data rows
+                    foreach (var report in reports.OrderByDescending(r => r.Profit).Take(20))
+                    {
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(report.ProductName);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(report.UnitsSold.ToString());
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text($"₱{report.Revenue:N2}");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text($"₱{report.Cost:N2}");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text($"₱{report.Profit:N2}")
+                            .FontColor(report.Profit > 0 ? Colors.Green.Darken2 : Colors.Red.Darken2).Bold();
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text($"{report.ProfitMargin:F2}%");
+                    }
+                });
+            });
+        }
 
-            // Data rows
-            foreach (var sale in recentSales.Take(15))
+        void ComposeRecentSales(IContainer container, List<Sale> sales)
+        {
+            container.Column(column =>
             {
-                table.AddCell(CreateCell(sale.ProductName));
-                table.AddCell(CreateCell(sale.Quantity.ToString()));
-                table.AddCell(CreateCell($"₱{sale.Total:N2}"));
-                table.AddCell(CreateCell(sale.Date.ToString("MMM dd, yyyy hh:mm tt")));
-            }
+                column.Item().Text("Recent Sales Transactions").FontSize(16).Bold();
+                
+                column.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(3);
+                        columns.RelativeColumn(1.5f);
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(2);
+                    });
 
-            document.Add(table);
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Product").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Quantity").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Total").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Date").FontColor(Colors.White).Bold();
+                    });
+
+                    foreach (var sale in sales.Take(15))
+                    {
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(sale.ProductName);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(sale.Quantity.ToString());
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text($"₱{sale.Total:N2}");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(sale.Date.ToString("MMM dd, yyyy hh:mm tt"));
+                    }
+                });
+            });
         }
 
-        private void AddRecentStockActivityTable(Document document, List<StockLog> recentLogs)
+        void ComposeStockActivity(IContainer container, List<StockLog> logs)
         {
-            var title = new Paragraph("Recent Stock Activity")
-                .SetFontSize(18)
-                .SetBold()
-                .SetMarginTop(20)
-                .SetMarginBottom(10);
-            document.Add(title);
-
-            if (!recentLogs.Any())
+            container.Column(column =>
             {
-                document.Add(new Paragraph("No stock activity data available.")
-                    .SetItalic()
-                    .SetMarginBottom(20));
-                return;
-            }
+                column.Item().Text("Recent Stock Activity").FontSize(16).Bold();
+                
+                column.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(2.5f);
+                        columns.RelativeColumn(1.5f);
+                        columns.RelativeColumn(1);
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(2);
+                    });
 
-            var table = new Table(UnitValue.CreatePercentArray(new float[] { 2.5f, 1.5f, 1, 2, 2 }))
-                .UseAllAvailableWidth()
-                .SetMarginBottom(20);
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Product").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Action").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Qty").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Reason").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Medium).Padding(5)
+                            .Text("Date").FontColor(Colors.White).Bold();
+                    });
 
-            // Headers
-            AddTableHeader(table, "Product");
-            AddTableHeader(table, "Action");
-            AddTableHeader(table, "Qty");
-            AddTableHeader(table, "Reason");
-            AddTableHeader(table, "Date");
+                    foreach (var log in logs.Take(15))
+                    {
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(log.ProductName);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(log.Action);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(log.Quantity.ToString());
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(log.Reason ?? "-");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
+                            .Text(log.Date.ToString("MMM dd, yyyy hh:mm tt"));
+                    }
+                });
+            });
+        }
 
-            // Data rows
-            foreach (var log in recentLogs.Take(15))
+        void ComposeFooter(IContainer container)
+        {
+            container.Column(column =>
             {
-                table.AddCell(CreateCell(log.ProductName));
-                table.AddCell(CreateCell(log.Action));
-                table.AddCell(CreateCell(log.Quantity.ToString()));
-                table.AddCell(CreateCell(log.Reason ?? "-"));
-                table.AddCell(CreateCell(log.Date.ToString("MMM dd, yyyy hh:mm tt")));
-            }
-
-            document.Add(table);
-        }
-
-        private void AddFooter(Document document)
-        {
-            var footer = new Paragraph($"Generated on: {DateTime.Now:MMMM dd, yyyy hh:mm tt}")
-                .SetFontSize(10)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginTop(30)
-                .SetItalic()
-                .SetFontColor(ColorConstants.GRAY);
-            document.Add(footer);
-
-            var appFooter = new Paragraph("Inventory Management System © 2026")
-                .SetFontSize(9)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontColor(ColorConstants.GRAY);
-            document.Add(appFooter);
-        }
-
-        private void AddTableHeader(Table table, string text)
-        {
-            var cell = new Cell()
-                .Add(new Paragraph(text).SetBold().SetFontSize(11))
-                .SetBackgroundColor(new DeviceRgb(33, 150, 243))
-                .SetFontColor(ColorConstants.WHITE)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetPadding(8)
-                .SetBorder(new SolidBorder(ColorConstants.WHITE, 1));
-            table.AddHeaderCell(cell);
-        }
-
-        private void AddTableCell(Table table, string text, DeviceRgb color)
-        {
-            var cell = new Cell()
-                .Add(new Paragraph(text).SetBold().SetFontSize(13))
-                .SetBackgroundColor(new DeviceRgb(color.GetColorValue()[0] * 0.2f, 
-                                                  color.GetColorValue()[1] * 0.2f, 
-                                                  color.GetColorValue()[2] * 0.2f))
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetPadding(10)
-                .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 1));
-            table.AddCell(cell);
-        }
-
-        private Cell CreateCell(string text)
-        {
-            return new Cell()
-                .Add(new Paragraph(text).SetFontSize(10))
-                .SetPadding(5)
-                .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.5f));
+                column.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                column.Item().PaddingTop(5).AlignCenter()
+                    .Text($"Generated on: {DateTime.Now:MMMM dd, yyyy hh:mm tt}")
+                    .FontSize(9).Italic().FontColor(Colors.Grey.Medium);
+                column.Item().AlignCenter()
+                    .Text("Inventory Management System © 2026")
+                    .FontSize(8).FontColor(Colors.Grey.Medium);
+            });
         }
     }
 }

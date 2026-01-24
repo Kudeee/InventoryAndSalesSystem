@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="EPPlus" Version="7.0.3" />
-        <PackageReference Include="itext7" Version="8.0.2" />
+        <PackageReference Include="QuestPDF" Version="2025.12.3" />
         <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
     </ItemGroup>
 
