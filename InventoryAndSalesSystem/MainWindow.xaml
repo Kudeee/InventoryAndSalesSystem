@@ -13,26 +13,21 @@
         <!-- Header -->
         <Border Grid.Row="0" Background="#1976D2" Padding="20,15">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Logo -->
-                <Image Width="100" Height="100" 
-                       VerticalAlignment="Center"
-                       Margin="0,0,15,0"
+                <Image Width="100" Height="100" VerticalAlignment="Center" Margin="0,0,15,0"
                        RenderOptions.BitmapScalingMode="HighQuality">
                     <Image.Source>
                         <BitmapImage UriSource="pack://application:,,,/Assets/logo.png"/>
                     </Image.Source>
                 </Image>
-                <!-- Title Text -->
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Inventory Management System" 
-                              FontSize="24" FontWeight="Bold" 
-                              Foreground="White"/>
-                    <TextBlock Text="Manage your products, sales, and stock efficiently" 
+                    <TextBlock Text="Inventory Management System"
+                              FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Manage your products, sales, and stock efficiently"
                               FontSize="12" Foreground="#E3F2FD" Margin="0,5,0,0"/>
                 </StackPanel>
             </StackPanel>
         </Border>
-            
+
         <!-- Navigation and Content -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -42,56 +37,63 @@
 
             <!-- Navigation Menu -->
             <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
-                <StackPanel Margin="10">
-                    <Button Content="📦 Products" 
-                            Height="45" 
-                            Click="ShowProductList_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="➕ Add/Edit Product" 
-                            Height="45" 
-                            Click="ShowAddEdit_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="🛒 Sell Product" 
-                            Height="45" 
-                            Click="ShowSell_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="📈 Restock" 
-                            Height="45" 
-                            Click="ShowRestock_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="↩️ Sales Return" 
-                            Height="45" 
-                            Click="ShowSalesReturn_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="📥 Purchase Return" 
-                            Height="45" 
-                            Click="ShowPurchaseReturn_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="❌ Product Loss" 
-                            Height="45" 
-                            Click="ShowProductLoss_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                    <Button Content="📊 Reports" 
-                            Height="45" 
-                            Click="ShowReports_Click"
-                            Background="White"
-                            HorizontalContentAlignment="Left"
-                            Padding="15,10"/>
-                </StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+
+                        <!-- Inventory group -->
+                        <TextBlock Text="INVENTORY" FontSize="9" FontWeight="Bold"
+                                   Foreground="#9E9E9E" Margin="10,10,0,4"/>
+
+                        <Button Content="📦 Products"
+                                Height="40" Click="ShowProductList_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="➕ Add / Edit Product"
+                                Height="40" Click="ShowAddEdit_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+
+                        <!-- Operations group -->
+                        <TextBlock Text="OPERATIONS" FontSize="9" FontWeight="Bold"
+                                   Foreground="#9E9E9E" Margin="10,12,0,4"/>
+
+                        <Button Content="🛒 Sell Product"
+                                Height="40" Click="ShowSell_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="📈 Restock"
+                                Height="40" Click="ShowRestock_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="↩️ Sales Return"
+                                Height="40" Click="ShowSalesReturn_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="📥 Purchase Return"
+                                Height="40" Click="ShowPurchaseReturn_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="❌ Product Loss"
+                                Height="40" Click="ShowProductLoss_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+
+                        <!-- Analytics group -->
+                        <TextBlock Text="ANALYTICS" FontSize="9" FontWeight="Bold"
+                                   Foreground="#9E9E9E" Margin="10,12,0,4"/>
+
+                        <Button Content="📊 Reports"
+                                Height="40" Click="ShowReports_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="🔢 Cycle Count"
+                                Height="40" Click="ShowCycleCount_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+
+                        <!-- System group -->
+                        <TextBlock Text="SYSTEM" FontSize="9" FontWeight="Bold"
+                                   Foreground="#9E9E9E" Margin="10,12,0,4"/>
+
+                        <Button Content="📋 Audit Trail"
+                                Height="40" Click="ShowAuditTrail_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                        <Button Content="💾 Backup"
+                                Height="40" Click="ShowBackup_Click"
+                                Background="White" HorizontalContentAlignment="Left" Padding="15,8"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <!-- Content Area -->
