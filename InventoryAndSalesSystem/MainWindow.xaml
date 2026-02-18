@@ -12,12 +12,24 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Background="#1976D2" Padding="20,15">
-            <StackPanel>
-                <TextBlock Text="Inventory Management System" 
-                          FontSize="24" FontWeight="Bold" 
-                          Foreground="White"/>
-                <TextBlock Text="Manage your products, sales, and stock efficiently" 
-                          FontSize="12" Foreground="#E3F2FD" Margin="0,5,0,0"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Logo -->
+                <Image Width="100" Height="100" 
+                       VerticalAlignment="Center"
+                       Margin="0,0,15,0"
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                    <Image.Source>
+                        <BitmapImage UriSource="pack://application:,,,/Assets/logo.png"/>
+                    </Image.Source>
+                </Image>
+                <!-- Title Text -->
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Inventory Management System" 
+                              FontSize="24" FontWeight="Bold" 
+                              Foreground="White"/>
+                    <TextBlock Text="Manage your products, sales, and stock efficiently" 
+                              FontSize="12" Foreground="#E3F2FD" Margin="0,5,0,0"/>
+                </StackPanel>
             </StackPanel>
         </Border>
             

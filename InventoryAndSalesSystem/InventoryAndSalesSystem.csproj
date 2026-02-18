@@ -20,4 +20,9 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\logo.png" />
+      <Resource Include="Assets\logo.png" />
+    </ItemGroup>
+
 </Project>
